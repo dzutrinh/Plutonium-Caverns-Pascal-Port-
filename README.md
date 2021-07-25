@@ -11,4 +11,4 @@ Original git: [url]https://github.com/jani-nykanen/plutonium-caverns[/url]
 
 Why am I doing this? Two months of pandemic lockdown in Saigon, so I have a lot of spare time.
 
-Thanks goes to Jani Nykänen.
+Thank goes to Jani Nykänen.
