@@ -1,0 +1,47 @@
+#
+# Makefile for Plutonium Caverns (Pascal port)
+# 
+
+TMTROOT	= C:/TMT
+TP7ROOT	= C:/BP
+TMTPC	= $(TMTROOT)/BIN/TMTPC.EXE
+TPC	= $(TP7ROOT)/BIN/TPC.EXE
+RM	= ERASE
+
+# set your Pascal compiler here
+PC	= $(TMTPC)
+
+CORE_D	= ./CORE
+CORE_H	= $(CORE_D)/APP.INC      \
+	  $(CORE_D)/ASSET.INC    \
+	  $(CORE_D)/ERROR.INC    \
+	  $(CORE_D)/GRAPHICS.INC \
+	  $(CORE_D)/INPUT.INC    \
+	  $(CORE_D)/SOUND.INC    \
+	  $(CORE_D)/SPRITE.INC   \
+	  $(CORE_D)/TILEMAP.INC  \
+	  $(CORE_D)/TRANS.INC    \
+	  $(CORE_D)/TYPES.INC    \
+	  $(CORE_D)/UTILS.INC
+GAME_D	= ./GAME
+GAME_H	= $(GAME_D)/GAME.INC     \
+	  $(GAME_D)/GLOBALS.INC  \
+	  $(GAME_D)/INTRO.INC    \
+	  $(GAME_D)/SMENU.INC    \
+	  $(GAME_D)/STORY.INC    \
+	  $(GAME_D)/TITLE.INC    \
+	  $(GAME_D)/MENU.INC     \
+	  $(GAME_D)/GAME.INC     \
+	  PREPS.INC
+
+MAIN	= PC
+SOURCES	= $(CORE_H) $(GAME_H) $(MAIN).PAS
+
+all:	$(SOURCES)
+	@$(PC) $(MAIN)
+	@if exist $(MAIN).SYM $(RM) $(MAIN).SYM
+	@if exist $(MAIN).FPD $(RM) $(MAIN).FPD
+clean:
+	@if exist $(MAIN).EXE $(RM) $(MAIN).EXE
+	@if exist $(MAIN).SYM $(RM) $(MAIN).SYM
+	@if exist $(MAIN).FPD $(RM) $(MAIN).FPD
