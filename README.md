@@ -2,7 +2,7 @@
  A port of the Plutonium Caverns for DOS by Jani Nykänen to Pascal language.
 Compile and run this under DOS or DOSBox using Turbo Pascal or TMT Pascal. 
 
-Original git: [url]https://github.com/jani-nykanen/plutonium-caverns[/url]
+Original git: https://github.com/jani-nykanen/plutonium-caverns
 
 * Only the source codes are availablle, in 8.3 format. No LFN needed.
 * Text strings are limited to 255 characters. Ofcourse, I use standard Pascal strings.
