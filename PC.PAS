@@ -21,6 +21,9 @@
 
 uses	crt, dos;
 
+{$define __MEM_CHECK__}
+{$undef  __MEM_CHECK__}
+
 {*--------------------------- C O R E  E N G I N E -------------------------*}
 {$i core\types.inc   }
 {$i core\error.inc   }
@@ -62,4 +65,5 @@ begin
         KBD_add_button(3, KEY_ESC  );
 
         APP_run;
+	APP_done;
 end.

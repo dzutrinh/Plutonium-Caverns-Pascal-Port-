@@ -26,6 +26,10 @@ procedure	MEM_free  (var pt);                     	forward;
 procedure       MEM_set   (var pt; value, len: uint16);		forward;
 procedure	MEM_copy  (var dst, src; len: uint16); 		forward;
 
+{ MEMORY LEAK CHECKING }
+procedure	MLC_init;	forward;
+procedure	MLC_done;	forward;
+
 { FILE HANDLING API }
 function        file_open(var f: FILE; create: boolean; name: string): boolean;	forward;
 procedure	file_close(var f: FILE);                                        forward;
@@ -49,6 +53,16 @@ function	ltoa(v: int16): string;                 forward;
 
 {--- replicate the C based memory allocator/deallocator }
 
+{$ifdef __MEM_CHECK__}
+var	MLC_log		: TEXT;
+	MLC_cnt		: int32;
+	MLC_sum_alloc   : int32;
+        MLC_sum_free	: int32;
+	MLC_before	: int32;
+	MLC_after	: int32;
+        MLC_initialized	: boolean;
+{$endif}
+
 { allocate a block of memory on heap, returns the pointer to allocate block }
 function        MEM_malloc(size: uint16): pointer;
 var	p	: pointer;
@@ -61,6 +75,17 @@ begin
 	if memavail < size then exit;	{ memory check             }
 	getmem(p, size);		{ allocate the block       }
         move(size, p^, sizeof(uint16));	{ save the original size   }
+
+{$ifdef __MEM_CHECK__}
+	if MLC_initialized then
+        begin
+	        inc(MLC_sum_alloc, size - sizeof(uint16));
+        	writeln(MLC_log, ltoa(MLC_cnt):4, ' ALLOC [', seg(p^):5, ':', ofs(p^):5, '] ',
+				 (size - sizeof(uint16)):12, ' bytes');
+		inc(MLC_cnt);
+        end;
+{$endif}
+
         p := pchar(p) + sizeof(uint16); { point to the actual data }
         MEM_malloc := p;		{ and return the pointer   }
 end;
@@ -74,6 +99,17 @@ begin
 	if p = nil then exit;		{ validate the pointer            }
         p := p - sizeof(uint16);	{ point back to the full block    }
         move(p^, size, sizeof(uint16));	{ and retrieve the allocated size }
+
+{$ifdef __MEM_CHECK__}
+	if MLC_initialized then
+        begin
+		dec(MLC_cnt);
+		inc(MLC_sum_free, size - sizeof(uint16));
+        	writeln(MLC_log, ltoa(MLC_cnt):4, ' FREE  [', seg(p^):5, ':', ofs(p^):5, '] ',
+				 (size - sizeof(uint16)):12, ' bytes');
+        end;
+{$endif}
+
         freemem(p, size);		{ free the memory block           }
         p := nil;			{ set the pointer to 'nil'        }
 end;
@@ -88,6 +124,48 @@ end;
 procedure	MEM_copy(var dst, src; len: uint16);
 begin
         move(src, dst, len);
+end;
+
+{--- quick memory leak checking }
+
+procedure	MLC_init;
+var	filename	: string;
+begin
+{$ifdef __MEM_CHECK__}
+	MLC_before    := memavail;
+	MLC_after     := 0;
+        MLC_cnt	      := 0;
+        MLC_sum_alloc := 0;
+        MLC_sum_free  := 0;
+
+        assign(MLC_log, 'PC.LOG');
+	{$I-}
+        rewrite(MLC_log);
+        {$I+}
+        MLC_initialized := ioresult = 0;
+{$endif}
+end;
+
+procedure	MLC_done;
+begin
+{$ifdef __MEM_CHECK__}
+	if MLC_initialized then
+        begin
+		MLC_after := memavail;
+        	writeln(MLC_log);
+		writeln(MLC_log, 'MEMORY LEAK CHECKING SUMMARIZED'#13#10);
+        	writeln(MLC_log, #249' Total allocated: ', MLC_sum_alloc:12                , ' byte(s)');
+	        writeln(MLC_log, #249' Total freed    : ', MLC_sum_free:12                 , ' byte(s)');
+		writeln(MLC_log, #249' ---------------- ', '------------');
+	        writeln(MLC_log, #249' Remaining      : ', MLC_sum_alloc - MLC_sum_free:12 , ' byte(s)');
+	        writeln(MLC_log);
+		writeln(MLC_log, #249' Heap before    : ', MLC_before:12                   , ' byte(s)');
+		writeln(MLC_log, #249' Heap after     : ', MLC_after:12                    , ' byte(s)');
+		writeln(MLC_log, #249' ---------------- ', '------------');
+		writeln(MLC_log, #249' Heap changed   : ', MLC_before - MLC_after:12       , ' byte(s)');
+		close(MLC_log);
+        end;
+{$endif}
 end;
 
 {--- easy file R/W }

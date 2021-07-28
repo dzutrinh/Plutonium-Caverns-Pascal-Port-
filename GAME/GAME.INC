@@ -849,6 +849,13 @@ procedure	stage_parse_objects(var s: STAGE);
 var	x, y, t,
 	max_gems: uint8;
 begin
+        if s.tmap = nil then
+        begin
+        	ERR_throw_no_param('Map parsing error.');
+        	APP_terminate;
+                exit;
+        end;
+
 	max_gems := 0;
 
         for y := 0 to s.h-1 do
@@ -926,7 +933,6 @@ end;
 procedure       stage_destroy(var s: STAGE);
 begin
         stage_refactor(s);
-        TLM_destroy(s.tmap);
 end;
 
 { destroy stage data }
@@ -935,6 +941,7 @@ begin
 	if not s.initialized then exit;
         if s.data  <> nil then MEM_free(s.data);
         if s.solid <> nil then MEM_free(s.solid);
+        if s.tmap  <> nil then TLM_destroy(s.tmap);
 end;
 
 { initialize a stage }
@@ -946,7 +953,12 @@ begin
 	stage_init := FALSE;
 
 	t := TLM_load(map);
-        if t = nil then exit;
+        if t = nil then
+	begin
+                ERR_throw('Cannot load map ', map);
+                APP_terminate;
+		exit;
+        end;
 
         s.tmap := t;
 
@@ -1019,6 +1031,8 @@ const	LAVA_SPEED 	= 8;
 	GLOW_SPEED	= 4;
 var	i	: uint8;
 begin
+	if not s.initialized then exit;
+
 	{ update lava timer }
 	inc(s.lava_timer, LAVA_SPEED * steps);
         s.lava_timer := s.lava_timer mod (16 * FIXED_PREC);
@@ -1071,6 +1085,8 @@ const	RIGHT_FRAME_WIDTH	= 12;
 var     i		: uint8;
 	topx, topy, w	: int16;
 begin
+	if not s.initialized then exit;
+
 	topx	:= s.top_left.x;
         topy	:= s.top_left.y;
 
@@ -1127,6 +1143,8 @@ var	x, y, t	: uint8;
 	jx, jy	: int8;
         bmp	: BITMAP;
 begin
+	if not s.initialized then exit;
+
 	for y := starty to ey do
         begin
         	for x := startx to ex do
@@ -1462,6 +1480,8 @@ procedure	stage_reset(var s: STAGE);
 var	i	: int16;
 	tileid	: uint8;
 begin
+	if not s.initialized then exit;
+
 	{ reset tile & solid data }
 	for i := 0 to s.w * s.h - 1 do
         begin
@@ -1496,6 +1516,8 @@ end;
 procedure	stage_redraw(var s: STAGE);
 var	i	: int16;
 begin
+	if not s.initialized then exit;
+
 	{ set the render flags for the tiles }
 	s.static_drawn := FALSE;
 
@@ -1698,6 +1720,7 @@ end;
 { draw game }
 procedure	game_draw;
 begin
+	if not game_stage.initialized then exit;
 
 	{ draw stage clear }
 	if game_stage_clear then
@@ -1744,11 +1767,7 @@ begin
 	path := ASSETS_MAPS + ltoa(uint8(param)) + '.BIN';
 
         stage_refactor(game_stage);
-        if not stage_init(game_stage, path) then
-	begin
-                ERR_throw('Stage loading error!: ', path);
-		APP_terminate;
-        end;
+        if not stage_init(game_stage, path) then exit;
 
         { set re-render flags }
         game_redraw_HUD   := TRUE;
@@ -1864,7 +1883,8 @@ begin
            not AST_add_bitmap(F_BMP_EXPLOSION, 'exp'    ) or
            not AST_add_bitmap(F_BMP_SHIP     , 'ship'   ) then
         begin
-	        game_assets_loaded := FALSE;
+        	ERR_throw_no_param('Several game assets are missing.');
+                APP_terminate;
                 exit;
         end;
 
