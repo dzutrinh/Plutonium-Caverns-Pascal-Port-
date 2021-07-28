@@ -23,6 +23,7 @@ type    uint8	= byte;		{ 8-bit unsigned integer              }
 {$else}
 	int16	= smallint;	{ 'SmallInt' in TMT Pascal            }
 {$endif}
+	int32	= longint;
 
 	{ for fast indexing of pointer offsets }
 	int16_array = array[0..31999] of int16;

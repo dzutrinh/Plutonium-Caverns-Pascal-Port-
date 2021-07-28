@@ -21,6 +21,7 @@ procedure	APP_dispose;						forward;
 procedure	APP_update(steps: int16);                               forward;
 procedure	APP_draw;                                               forward;
 function	APP_init: boolean;                                      forward;
+procedure	APP_done;                                               forward;
 procedure	APP_run;                                                forward;
 procedure	APP_add_scene(s: SCENE; active: boolean);               forward;
 procedure	APP_change_scene(name: string; param: pointer);         forward;
@@ -69,8 +70,13 @@ var	i	: uint16;
 begin
 	APP_init := FALSE;
 
+	MLC_init;
         ERR_init;
-	if not VGA_init_graphics then exit;
+	if not VGA_init_graphics then
+	begin
+        	ERR_throw_no_param('Graphics initialized error.');
+		exit;
+        end;
 
         KBD_init;
         AST_init;
@@ -120,9 +126,16 @@ begin
                 VGA_draw_frame;
         end;
 
+end;
+
+procedure	APP_done;
+begin
         APP_dispose;
 
-        if ERR_get <> '' then writeln('ERROR: ', ERR_get);
+        if ERR_get <> '' then
+		writeln('ERROR: ', ERR_get);
+
+	MLC_done;
 end;
 
 procedure	APP_add_scene(s: SCENE; active: boolean);
