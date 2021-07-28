@@ -14,10 +14,4 @@ Why am I doing this? Two months of pandemic lockdown in Saigon, so I have a lot 
 Thank goes to Jani Nykänen.
 
 ## Building
-Just type:<br>
-        TPC PC.PAS<br>
-or<br>
-        TMTPC PC.PAS<br>
-to compile the source code.
-
-The MAKEFILE is also available.
+Just type: 'TPC PC.PAS' or 'TMTPC PC.PAS' to compile the source code. The MAKEFILE is also available.
