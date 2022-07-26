@@ -8,6 +8,7 @@ Original git: https://github.com/jani-nykanen/plutonium-caverns
 * Text strings are limited to 255 characters. Ofcourse, I use standard Pascal strings.
 * Memory leaks are completely fixed.
 * TP/BP and TMT generate smaller binary file size.
+* No external libraries required.
 
 Why am I doing this? Two months of pandemic lockdown in Saigon, so I have a lot of spare time.
 
